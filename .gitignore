@@ -7,3 +7,5 @@ app/.classpath
 app/.project
 app/.settings/
 local.properties
+app/build/
+app/app.iml
