@@ -1,2 +1,9 @@
 MeteoApp.iml
 MeteoApp-master.iml
+.gradle/
+.idea/
+app/.DS_Store
+app/.classpath
+app/.project
+app/.settings/
+local.properties
