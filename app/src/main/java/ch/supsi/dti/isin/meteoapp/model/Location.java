@@ -25,4 +25,9 @@ public class Location {
     public Location() {
         Id = UUID.randomUUID();
     }
+
+    public Location(String name) {
+        Id = UUID.randomUUID();
+        this.mName = name;
+    }
 }
