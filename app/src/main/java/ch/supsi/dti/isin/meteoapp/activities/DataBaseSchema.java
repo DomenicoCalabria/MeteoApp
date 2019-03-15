@@ -1,6 +1,6 @@
 package ch.supsi.dti.isin.meteoapp.activities;
 
-public class DatabaseSchema {
+public class DataBaseSchema {
     public static final class Locations {
         public static final String NAME = "Locazioni";
 

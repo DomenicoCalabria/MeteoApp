@@ -12,24 +12,24 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String creationQuery = "create table "+ DatabaseSchema.Locations.NAME+"(" +
+        String creationQuery = "create table "+ DataBaseSchema.Locations.NAME+"(" +
                 "_id integer primary key autoincrement, " +
-                DatabaseSchema.Locations.Cities.CITY_NAME +
+                DataBaseSchema.Locations.Cities.CITY_NAME +
                 " , "+
-                DatabaseSchema.Locations.Cities.LATITUDE +
+                DataBaseSchema.Locations.Cities.LATITUDE +
                 " , "+
-                DatabaseSchema.Locations.Cities.LONGITUDE +
+                DataBaseSchema.Locations.Cities.LONGITUDE +
                 ")";
         db.execSQL(creationQuery);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        /*String updateQuery = "create table "+DatabaseSchema.Locations.LATITUDE+"(" +
+        /*String updateQuery = "create table "+DataBaseSchema.Locations.LATITUDE+"(" +
                 "_id integer primary key autoincrement, " +
-                DatabaseSchema.Locations.Cities.CITY_NAME +
+                DataBaseSchema.Locations.Cities.CITY_NAME +
                 " , "+
-                DatabaseSchema.Locations.Cities.LATITUDE +
+                DataBaseSchema.Locations.Cities.LATITUDE +
                 ")";
         db.execSQL(updateQuery);*/
     }
