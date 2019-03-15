@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -22,15 +23,22 @@ import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
 import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.model.Location;
+import io.nlopez.smartlocation.OnLocationUpdatedListener;
+import io.nlopez.smartlocation.SmartLocation;
+import io.nlopez.smartlocation.location.config.LocationAccuracy;
+import io.nlopez.smartlocation.location.config.LocationParams;
 
 public class ListFragment extends Fragment {
     private RecyclerView mLocationRecyclerView;
     private LocationAdapter mAdapter;
+    private android.location.Location actualLoc;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        startLocationListener();
     }
 
 
@@ -45,6 +53,12 @@ public class ListFragment extends Fragment {
         mLocationRecyclerView.setAdapter(mAdapter);
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        SmartLocation.with(getContext()).location().stop();
     }
 
     // Menu
@@ -131,6 +145,26 @@ public class ListFragment extends Fragment {
             return mLocations.size();
         }
 
-        public void addLocation(Location l){ mLocations.add(l); }
+        public void addLocation(Location l){
+            mLocations.add(l);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    //Location
+
+    private void startLocationListener() {
+        LocationParams.Builder builder = new LocationParams.Builder()
+                .setAccuracy(LocationAccuracy.HIGH)
+                .setDistance(0)
+                .setInterval(5000); // 5 sec
+
+        SmartLocation.with(getContext()).location().continuous().config(builder.build())
+                .start(new OnLocationUpdatedListener() {
+                    @Override
+                    public void onLocationUpdated(android.location.Location location) {
+                        actualLoc = location;
+                        Toast.makeText(getContext(), "new Location: "+actualLoc.toString(), Toast.LENGTH_LONG).show();
+                    }});
     }
 }
