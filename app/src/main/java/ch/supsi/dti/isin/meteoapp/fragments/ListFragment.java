@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.util.List;
 
 import ch.supsi.dti.isin.meteoapp.R;
@@ -29,18 +27,15 @@ import io.nlopez.smartlocation.location.config.LocationAccuracy;
 import io.nlopez.smartlocation.location.config.LocationParams;
 
 public class ListFragment extends Fragment {
+    private String TAG = "ListFragment";
     private RecyclerView mLocationRecyclerView;
     private LocationAdapter mAdapter;
-    private android.location.Location actualLoc;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        startLocationListener();
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,6 +46,10 @@ public class ListFragment extends Fragment {
         List<Location> locations = LocationsHolder.get(getActivity()).getLocations();
         mAdapter = new LocationAdapter(locations);
         mLocationRecyclerView.setAdapter(mAdapter);
+
+        //TODO aggiungere controllo se l'app ha o meno il permesso alla locazione attivo, gestire il caso in
+        //TODO cui non lo ha prima di chiamare startLocationListener();
+        startLocationListener();
 
         return view;
     }
@@ -88,7 +87,6 @@ public class ListFragment extends Fragment {
                         .setView(editText)
                         .show();
 
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -123,6 +121,7 @@ public class ListFragment extends Fragment {
 
     private class LocationAdapter extends RecyclerView.Adapter<LocationHolder> {
         private List<Location> mLocations;
+        private android.location.Location actualLoc;
 
         public LocationAdapter(List<Location> locations) {
             mLocations = locations;
@@ -147,7 +146,33 @@ public class ListFragment extends Fragment {
 
         public void addLocation(Location l){
             mLocations.add(l);
-            mAdapter.notifyDataSetChanged();
+            this.notifyDataSetChanged();
+        }
+
+        public void notifyLocationUpdated(android.location.Location location){
+            String name = String.valueOf(location.getLatitude());
+
+            if(actualLoc == null)
+                mLocations.add(0, new Location(name));
+            else
+                mLocations.get(0).setName(name);
+
+            actualLoc = location;
+            this.notifyDataSetChanged();
+        }
+
+        public double getActualLatitude(){
+            if(actualLoc != null)
+                return actualLoc.getLatitude();
+
+            return 0;
+        }
+
+        public double getActualLongitude(){
+            if(actualLoc != null)
+                return actualLoc.getLongitude();
+
+            return 0;
         }
     }
 
@@ -163,8 +188,7 @@ public class ListFragment extends Fragment {
                 .start(new OnLocationUpdatedListener() {
                     @Override
                     public void onLocationUpdated(android.location.Location location) {
-                        actualLoc = location;
-                        Toast.makeText(getContext(), "new Location: "+actualLoc.toString(), Toast.LENGTH_LONG).show();
+                        mAdapter.notifyLocationUpdated(location);
                     }});
     }
 }

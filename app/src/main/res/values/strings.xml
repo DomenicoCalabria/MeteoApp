@@ -3,9 +3,6 @@
     <string name="l_isola_che_non_c">L\'Isola che non c\'è</string>
     <string name="stubofforecast">stubOfForecast</string>
     <string name="textview">TextView</string>
-    <string name="massime_integer_max_int">Massime: Integer.MAX_INT</string>
-    <string name="minime_integer_min_int">Minime: Integer.MIN_INT</string>
-    <string name="parzialmente_soleggiato_con_un_tocco_di_nuvole_e_probabile_pioggia">Parzialmente Soleggiato con un tocco di nuvole e probabile pioggia</string>
     <string name="aggiorna">Aggiorna</string>
     <string name="trovami">Trovami</string>
     <string name="cerca">Cerca</string>
