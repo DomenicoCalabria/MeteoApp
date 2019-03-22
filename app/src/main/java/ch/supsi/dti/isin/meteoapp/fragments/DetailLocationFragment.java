@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.UUID;
 
@@ -58,11 +59,15 @@ public class DetailLocationFragment extends Fragment {
 
 
     public void updateView(Weather weather){
-        cityName.setText(mLocation.getName());
-        actualTemp.setText(String.valueOf(weather.getTemp()));
-        minTemp.setText(String.valueOf(weather.getMin()));
-        maxTemp.setText(String.valueOf(weather.getMax()));
-        mainDescription.setText(weather.getDesc());
+        if(weather != null){
+            cityName.setText(mLocation.getName());
+            actualTemp.setText(String.valueOf(weather.getTemp()));
+            minTemp.setText(String.valueOf(weather.getMin()));
+            maxTemp.setText(String.valueOf(weather.getMax()));
+            mainDescription.setText(weather.getDesc());
+        }else{
+            Toast.makeText(getContext(), "Wrong place", Toast.LENGTH_LONG).show();
+        }
     }
 }
 
