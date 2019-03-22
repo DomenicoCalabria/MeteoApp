@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 
 import java.util.UUID;
 
+import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.fragments.DetailLocationFragment;
 
 public class DetailActivity extends SingleFragmentActivity {

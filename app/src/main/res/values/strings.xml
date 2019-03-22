@@ -17,4 +17,6 @@
     <string name="minDESC">Minime:</string>
     <string name="def_min">-100</string>
     <string name="def_max">100</string>
+    <string name="newItem">New</string>
+    <string name="tienimi_aggiornato">Tienimi aggiornato</string>
 </resources>

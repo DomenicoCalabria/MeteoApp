@@ -8,6 +8,8 @@ public class MainActivity extends SingleFragmentActivity {
 
     @Override
     protected Fragment createFragment() {
-        return new ListFragment();
+
+        //return new ListFragment();
+        return new DetailActivity().createFragment();
     }
 }

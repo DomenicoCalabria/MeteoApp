@@ -14,10 +14,9 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String creationQuery = "create table "+ DataBaseSchema.Locations.NAME+"(" +
                 "_id integer primary key autoincrement, " +
-                DataBaseSchema.Locations.Cities.CITY_NAME +
-                " , "+
-                DataBaseSchema.Locations.Cities.LATITUDE +
-                " , "+
+                DataBaseSchema.Locations.Cities.SERVICE_ID + ", " +
+                DataBaseSchema.Locations.Cities.CITY_NAME + ", "+
+                DataBaseSchema.Locations.Cities.LATITUDE + ", "+
                 DataBaseSchema.Locations.Cities.LONGITUDE +
                 ")";
         db.execSQL(creationQuery);
@@ -34,4 +33,13 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         db.execSQL(updateQuery);*/
     }
     //TODO: inserire funzionalità del database: salvare le città
+    public void saveCity(SQLiteDatabase db, String codID, String nome, double latitudine, double longitudine){
+        String query = "insert into "+DataBaseSchema.Locations.NAME+" values (" +
+                codID + ","+
+                nome + ","+
+                latitudine + ","+
+                longitudine + ","+
+                ")";
+        db.execSQL(query);
+    }
 }
