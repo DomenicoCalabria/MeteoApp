@@ -177,14 +177,14 @@ public class ListFragment extends Fragment {
         }
 
         public void notifyLocationUpdated(android.location.Location location){
-            String name = String.valueOf(location.getLatitude()) +" "+ String.valueOf(location.getLongitude());
+            String name = String.valueOf(location.getLatitude()) +","+ String.valueOf(location.getLongitude());
 
             Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
             try {
                 List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
                 if(addresses!=null && addresses.size()>0){
-                    name = addresses.get(0).getAddressLine(0);
+                    name = addresses.get(0).getLocality();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
