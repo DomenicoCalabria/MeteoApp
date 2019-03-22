@@ -12,12 +12,18 @@ import java.util.UUID;
 import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.model.Location;
+import ch.supsi.dti.isin.meteoapp.utility.RestClient;
+import ch.supsi.dti.isin.meteoapp.utility.Weather;
 
 public class DetailLocationFragment extends Fragment {
     private static final String ARG_LOCATION_ID = "location_id";
 
     private Location mLocation;
-    private TextView mIdTextView;
+    private TextView cityName;
+    private TextView actualTemp;
+    private TextView minTemp;
+    private TextView maxTemp;
+    private TextView mainDescription;
 
     public static DetailLocationFragment newInstance(UUID locationId) {
         Bundle args = new Bundle();
@@ -38,11 +44,25 @@ public class DetailLocationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_detail_location, container, false);
+        cityName = v.findViewById(R.id.tv_cityNameMain);
+        actualTemp = v.findViewById(R.id.tv_att);
+        minTemp = v.findViewById(R.id.tv_min);
+        maxTemp = v.findViewById(R.id.tv_max);
+        mainDescription = v.findViewById(R.id.tv_mainForecastDescription);
 
-        mIdTextView = v.findViewById(R.id.id_textView);
-        mIdTextView.setText(mLocation.getId().toString());
-
+        RestClient openWeatherClient = new RestClient(this);
+        openWeatherClient.request(mLocation.getName());
         return v;
+    }
+
+
+
+    public void updateView(Weather weather){
+        cityName.setText(mLocation.getName());
+        actualTemp.setText(String.valueOf(weather.getTemp()));
+        minTemp.setText(String.valueOf(weather.getMin()));
+        maxTemp.setText(String.valueOf(weather.getMax()));
+        mainDescription.setText(weather.getDesc());
     }
 }
 

@@ -1,5 +1,7 @@
 package ch.supsi.dti.isin.meteoapp.utility;
 
+import android.os.AsyncTask;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,28 +11,40 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class RestClient  {
+import ch.supsi.dti.isin.meteoapp.fragments.DetailLocationFragment;
 
-    public static Weather getWeather(String city) {
-        return Parser.parse(request(city));
+public class RestClient extends AsyncTask<URL, Void, Weather> {
+    private DetailLocationFragment context;
+
+    public RestClient(DetailLocationFragment context){
+        this.context = context;
     }
 
-    private static String request(String city) {
-        String apiURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
+    public void request(String city){
+        String apiURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city.replaceAll(" ", "%20") + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
+        URL url = null;
+        try {
+            url = new URL(apiURL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        this.execute(url);
+    }
+
+    @Override
+    protected Weather doInBackground(URL... urls) {
         StringBuilder reply = new StringBuilder();
 
         try {
-            URL url = new URL(apiURL);
+            URL url = urls[0];
             HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
             httpConnection.setRequestMethod("GET");
             httpConnection.setRequestProperty("Accept", "application/json;charset=UTF-8");
 
-            InputStream inputStream;
-            if (httpConnection.getResponseCode() >= 400) {
-                inputStream = httpConnection.getErrorStream();
-            } else {
-                inputStream = httpConnection.getInputStream();
-            }
+            InputStream inputStream = httpConnection.getInputStream();
+
+            if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
+                throw new IOException();
 
             BufferedReader br = new BufferedReader(new InputStreamReader((inputStream)));
             String inputLine = null;
@@ -51,6 +65,12 @@ public class RestClient  {
             return null;
         }
 
-        return reply.toString();
+        return Parser.parse(reply.toString());
+    }
+
+    @Override
+    protected void onPostExecute(Weather weather) {
+        super.onPostExecute(weather);
+        context.updateView(weather);
     }
 }
