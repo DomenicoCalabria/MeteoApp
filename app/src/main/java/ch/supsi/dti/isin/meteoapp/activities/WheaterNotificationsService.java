@@ -48,7 +48,7 @@ public class WheaterNotificationsService extends IntentService {
 
     private void sendNotification(String nome, String newMeteo) {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // in Android >= 8.0 devo registrare il canale delle notifiche a livello di sistema (prossima slide)
+        // in Android >= 8.f0 devo registrare il canale delle notifiche a livello di sistema (prossima slide)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("WheaterNotificationsChannel", "Canale di notifiche sul meteo", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("Canale per tenere aggiornato l'utente sulle condizioni del meteo");
