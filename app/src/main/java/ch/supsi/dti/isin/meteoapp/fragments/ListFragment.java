@@ -38,6 +38,7 @@ import io.nlopez.smartlocation.location.config.LocationParams;
 public class ListFragment extends Fragment {
     private String TAG = "ListFragment";
     private RecyclerView mLocationRecyclerView;
+    private LocationsHolder locHolder;
     private LocationAdapter mAdapter;
     private String actualLoc = null;
     private Double actualLat = null;
@@ -55,14 +56,19 @@ public class ListFragment extends Fragment {
         mLocationRecyclerView = view.findViewById(R.id.recycler_view);
         mLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        List<Location> locations = LocationsHolder.get(getActivity()).getLocations();
+        locHolder = LocationsHolder.get(getActivity());
+        List<Location> locations = locHolder.getLocations();
         mAdapter = new LocationAdapter(locations);
         mLocationRecyclerView.setAdapter(mAdapter);
 
         if (savedInstanceState != null) {
-            actualLoc = savedInstanceState.getString("ACTUALLOC");
-            actualLat = savedInstanceState.getDouble("ACTUALLAT");
-            actualLon = savedInstanceState.getDouble("ACTUALLON");
+            try{
+                actualLoc = savedInstanceState.getString("ACTUALLOC");
+                actualLat = savedInstanceState.getDouble("ACTUALLAT");
+                actualLon = savedInstanceState.getDouble("ACTUALLON");
+            }catch(Exception e){
+                //do nothing
+            }
         }
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -77,9 +83,11 @@ public class ListFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putString("ACTUALLOC", actualLoc);
-        savedInstanceState.putDouble("ACTUALLAT", actualLat);
-        savedInstanceState.putDouble("ACTUALLON", actualLon);
+        if(actualLoc != null && actualLat != null && actualLon != null){
+            savedInstanceState.putString("ACTUALLOC", actualLoc);
+            savedInstanceState.putDouble("ACTUALLAT", actualLat);
+            savedInstanceState.putDouble("ACTUALLON", actualLon);
+        }
     }
 
     @Override
@@ -174,6 +182,7 @@ public class ListFragment extends Fragment {
         public void addLocation(Location l){
             mLocations.add(l);
             this.notifyDataSetChanged();
+            locHolder.save(l);
         }
 
         public void notifyLocationUpdated(android.location.Location location){
@@ -184,7 +193,7 @@ public class ListFragment extends Fragment {
                 List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
                 if(addresses!=null && addresses.size()>0){
-                    name = addresses.get(0).getLocality();
+                    name = addresses.get(0).getLocality() +", "+ addresses.get(0).getCountryCode();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -204,11 +213,11 @@ public class ListFragment extends Fragment {
 
     //Location
 
-    private void startLocationListener() {
+    public void startLocationListener() {
         LocationParams.Builder builder = new LocationParams.Builder()
                 .setAccuracy(LocationAccuracy.HIGH)
                 .setDistance(0)
-                .setInterval(10000); // 10 sec
+                .setInterval(60000); // 1 min
         SmartLocation.with(getContext()).location().continuous().config(builder.build())
                 .start(new OnLocationUpdatedListener() {
                     @Override
@@ -220,10 +229,6 @@ public class ListFragment extends Fragment {
     //Permissions
 
     private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        } else {
-            startLocationListener();
-        }
+        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
     }
 }
