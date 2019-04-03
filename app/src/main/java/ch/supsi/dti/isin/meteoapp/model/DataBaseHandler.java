@@ -1,4 +1,4 @@
-package ch.supsi.dti.isin.meteoapp.activities;
+package ch.supsi.dti.isin.meteoapp.model;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,16 +8,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.io.IOException;
 
-import ch.supsi.dti.isin.meteoapp.model.Location;
-
 public class DataBaseHandler extends SQLiteOpenHelper {
 
     // THANK YOU https://blog.reigndesign.com/blog/using-your-own-sqlite-database-in-android-applications/
 
     private static String DATABASE_NAME = "posti.db";
-    private static final int VERSION = 1; // versione
+    private static final int VERSION = 2; // versione
     private SQLiteDatabase db;
-    private final Context myContext;
 
     /**
      * Constructor
@@ -26,7 +23,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
      */
     public DataBaseHandler(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
-        this.myContext = context;
     }
 
 
@@ -49,7 +45,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String creationQuery = "create table "+ DataBaseSchema.Locations.NAME+"(" +
                 "_id integer primary key autoincrement, " +
-                DataBaseSchema.Locations.Cities.SERVICE_ID + ", " +
                 DataBaseSchema.Locations.Cities.CITY_NAME + ", "+
                 DataBaseSchema.Locations.Cities.LATITUDE + ", "+
                 DataBaseSchema.Locations.Cities.LONGITUDE +
@@ -59,7 +54,8 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        db.execSQL("DROP TABLE IF EXISTS " + DataBaseSchema.Locations.NAME);
+        onCreate(db);
     }
 
     // Add your public helper methods to access and get content from the database.
@@ -69,9 +65,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public void saveCity(Location l){
         String query = "insert into "+DataBaseSchema.Locations.NAME+" values (" +
                 "null" + ","+
-
-                0+ ","+ //TODO aggiungere id per ogni locazione l.getId() ?
-
                 "'"+l.getName()+ "',"+
                 l.getLatitude() + ","+
                 l.getLongitude()+
@@ -89,5 +82,10 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         cv.put(DataBaseSchema.Locations.Cities.LATITUDE, newLat);
         cv.put(DataBaseSchema.Locations.Cities.LONGITUDE, newLong);
         db.update(DataBaseSchema.Locations.NAME,cv,DataBaseSchema.Locations.Cities.CITY_NAME+" = "+city,null);
+    }
+
+    public void removeCity(String cName){
+        String query = "DELETE FROM "+DataBaseSchema.Locations.NAME+" WHERE nome_città = "+cName;
+        db.execSQL(query);
     }
 }

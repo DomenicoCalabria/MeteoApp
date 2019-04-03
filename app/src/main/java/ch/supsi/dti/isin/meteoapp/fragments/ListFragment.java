@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -116,7 +118,9 @@ public class ListFragment extends Fragment {
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mAdapter.addLocation(new Location(editText.getText().toString()));
+                                String name = editText.getText().toString();
+                                if(!locHolder.exist(name))
+                                    mAdapter.addLocation(new Location(name));
                             }
                         })
                         .setNegativeButton(android.R.string.cancel, null)
@@ -131,7 +135,7 @@ public class ListFragment extends Fragment {
 
     // Holder
 
-    private class LocationHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private class LocationHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         private TextView mNameTextView;
         private Location mLocation;
 
@@ -145,6 +149,23 @@ public class ListFragment extends Fragment {
         public void onClick(View view) {
             Intent intent = DetailActivity.newIntent(getActivity(), mLocation.getId());
             startActivity(intent);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Rimuovere "+mLocation.getName()+" ?")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mAdapter.removeLocation(mLocation);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+
+            return true;
         }
 
         public void bind(Location location) {
@@ -183,6 +204,17 @@ public class ListFragment extends Fragment {
             mLocations.add(l);
             this.notifyDataSetChanged();
             locHolder.save(l);
+        }
+
+        public void removeLocation(Location l){
+            for(Location loc : mLocations){
+                if(loc.getName().equals(l.getName())){
+                    locHolder.remove(l.getName());
+                    mLocations.remove(loc);
+                    break;
+                }
+            }
+            this.notifyDataSetChanged();
         }
 
         public void notifyLocationUpdated(android.location.Location location){

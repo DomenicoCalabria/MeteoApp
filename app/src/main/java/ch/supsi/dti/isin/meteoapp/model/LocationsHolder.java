@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import ch.supsi.dti.isin.meteoapp.activities.DataBaseHandler;
-
 public class LocationsHolder {
 
     private static LocationsHolder sLocationsHolder;
     private List<Location> mLocations;
     private DataBaseHandler dbHandler;
+    private Cursor c;
 
     public static LocationsHolder get(Context context) {
         if (sLocationsHolder == null)
@@ -34,20 +33,19 @@ public class LocationsHolder {
             e.printStackTrace();
         }
 
-        Cursor c = dbHandler.getCities();
+        c = dbHandler.getCities();
 
         if(c.moveToFirst()){
             while(!c.isAfterLast()){
-                mLocations.add(new Location(c.getString(2), c.getDouble(3), c.getDouble(4)));
+                mLocations.add(new Location(c.getString(1), c.getDouble(2), c.getDouble(3)));
                 c.moveToNext();
             }
         }
-
-        c.close();
     }
 
     @Override
     protected void finalize(){
+        c.close();
         dbHandler.close();
 
         try {
@@ -72,5 +70,17 @@ public class LocationsHolder {
 
     public void save(Location l) {
         dbHandler.saveCity(l);
+    }
+
+    public boolean exist(String locName){
+        for(Location l : mLocations)
+            if(l.getName().equals(locName))
+                return true;
+
+        return false;
+    }
+
+    public void remove(String locName){
+        dbHandler.removeCity(locName);
     }
 }
