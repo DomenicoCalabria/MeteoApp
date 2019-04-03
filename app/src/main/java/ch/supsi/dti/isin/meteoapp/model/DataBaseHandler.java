@@ -85,7 +85,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     }
 
     public void removeCity(String cName){
-        String query = "DELETE FROM "+DataBaseSchema.Locations.NAME+" WHERE nome_città = "+cName;
+        String query = "DELETE FROM "+DataBaseSchema.Locations.NAME+" WHERE nome_città = '"+cName+"'";
         db.execSQL(query);
     }
 }

@@ -8,12 +8,12 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +39,7 @@ import io.nlopez.smartlocation.location.config.LocationParams;
 public class ListFragment extends Fragment {
     private String TAG = "ListFragment";
     private RecyclerView mLocationRecyclerView;
+    private FloatingActionButton addButton;
     private LocationsHolder locHolder;
     private LocationAdapter mAdapter;
     private String actualLoc = null;
@@ -79,6 +79,29 @@ public class ListFragment extends Fragment {
             startLocationListener();
         }
 
+        //set onclick events
+        addButton = view.findViewById(R.id.addButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditText editText = new EditText(getContext());
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Aggiungi località")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String name = editText.getText().toString();
+                                if(!locHolder.exist(name))
+                                    mAdapter.addLocation(new Location(name));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setView(editText)
+                        .show();
+            }
+        });
+
         return view;
     }
 
@@ -109,23 +132,9 @@ public class ListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add:
+            case R.id.menu_item_search:
 
-                final EditText editText = new EditText(getContext());
-
-                new AlertDialog.Builder(getContext())
-                        .setTitle("Aggiungi località")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String name = editText.getText().toString();
-                                if(!locHolder.exist(name))
-                                    mAdapter.addLocation(new Location(name));
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setView(editText)
-                        .show();
+                //TODO search ?
 
                 return true;
             default:
@@ -142,6 +151,7 @@ public class ListFragment extends Fragment {
         public LocationHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item, parent, false));
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
             mNameTextView = itemView.findViewById(R.id.name);
         }
 
@@ -152,20 +162,23 @@ public class ListFragment extends Fragment {
         }
 
         @Override
-        public boolean onLongClick(View v) {
+        public boolean onLongClick(View view) {
 
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Rimuovere "+mLocation.getName()+" ?")
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mAdapter.removeLocation(mLocation);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show();
+            if(mAdapter.isRemovable(mLocation)){
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Rimuovere "+mLocation.getName()+" ?")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mAdapter.removeLocation(mLocation);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         public void bind(Location location) {
@@ -240,6 +253,10 @@ public class ListFragment extends Fragment {
             actualLon = location.getLongitude();
             actualLat = location.getLatitude();
             this.notifyDataSetChanged();
+        }
+
+        public boolean isRemovable(Location l){
+            return mLocations.get(0) != l || actualLoc == null;
         }
     }
 
