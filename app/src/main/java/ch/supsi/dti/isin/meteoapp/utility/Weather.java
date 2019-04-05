@@ -9,8 +9,9 @@ public class Weather {
     private final double temp;
     private final double min;
     private final double max;
+    private final String icon;
 
-    public Weather(String city, double lat, double lon, String desc, double temp, double min, double max) {
+    public Weather(String city, double lat, double lon, String desc, double temp, double min, double max, String icon) {
         this.city = city;
         this.lat = lat;
         this.lon = lon;
@@ -18,6 +19,7 @@ public class Weather {
         this.temp = temp;
         this.min = min;
         this.max = max;
+        this.icon = icon;
     }
 
     public String getCity() {
@@ -46,5 +48,9 @@ public class Weather {
 
     public double getMax() {
         return max;
+    }
+
+    public String getIcon() {
+        return icon;
     }
 }

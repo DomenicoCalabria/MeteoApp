@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import ch.supsi.dti.isin.meteoapp.utility.Weather;
 public class DetailLocationFragment extends Fragment {
     private static final String ARG_LOCATION_ID = "location_id";
 
+    private ImageView image;
     private Location mLocation;
     private TextView cityName;
     private TextView actualTemp;
@@ -45,6 +47,7 @@ public class DetailLocationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_detail_location, container, false);
+        image = v.findViewById(R.id.im_cityForecastMain);
         cityName = v.findViewById(R.id.tv_cityNameMain);
         actualTemp = v.findViewById(R.id.tv_att);
         minTemp = v.findViewById(R.id.tv_min);
@@ -59,7 +62,8 @@ public class DetailLocationFragment extends Fragment {
 
 
     public void updateView(Weather weather){
-        if(weather != null){
+        if(weather != null) {
+            image.setImageResource(image.getContext().getResources().getIdentifier(weather.getIcon(), "drawable", image.getContext().getPackageName()));
             cityName.setText(mLocation.getName());
             actualTemp.setText(String.valueOf(weather.getTemp()));
             minTemp.setText(String.valueOf(weather.getMin()));
@@ -67,6 +71,7 @@ public class DetailLocationFragment extends Fragment {
             mainDescription.setText(weather.getDesc());
         }else{
             Toast.makeText(getContext(), "Wrong place", Toast.LENGTH_LONG).show();
+            // go back to home page
         }
     }
 }

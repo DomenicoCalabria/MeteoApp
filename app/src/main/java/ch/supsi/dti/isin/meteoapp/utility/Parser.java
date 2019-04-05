@@ -12,11 +12,12 @@ public class Parser {
             double lat = obj.getJSONObject("coord").getDouble("lat");
             JSONArray weather = obj.getJSONArray("weather");
             String desc = weather.getJSONObject(0).getString("description");
+            String icon = weather.getJSONObject(0).getString("icon");
             double temp = obj.getJSONObject("main").getDouble("temp");
             double min = obj.getJSONObject("main").getDouble("temp_min");
             double max = obj.getJSONObject("main").getDouble("temp_max");
 
-            return new Weather(city, lat, lon, desc, temp, min, max);
+            return new Weather(city, lat, lon, desc, temp, min, max, "i" + icon.substring(0,2));
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
