@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -38,6 +39,8 @@ import io.nlopez.smartlocation.location.config.LocationParams;
 public class ListFragment extends Fragment {
     private String TAG = "ListFragment";
     private RecyclerView mLocationRecyclerView;
+    private FloatingActionButton addButton;
+    private LocationsHolder locHolder;
     private LocationAdapter mAdapter;
     private String actualLoc = null;
     private Double actualLat = null;
@@ -55,14 +58,19 @@ public class ListFragment extends Fragment {
         mLocationRecyclerView = view.findViewById(R.id.recycler_view);
         mLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        List<Location> locations = LocationsHolder.get(getActivity()).getLocations();
+        locHolder = LocationsHolder.get(getActivity());
+        List<Location> locations = locHolder.getLocations();
         mAdapter = new LocationAdapter(locations);
         mLocationRecyclerView.setAdapter(mAdapter);
 
         if (savedInstanceState != null) {
-            actualLoc = savedInstanceState.getString("ACTUALLOC");
-            actualLat = savedInstanceState.getDouble("ACTUALLAT");
-            actualLon = savedInstanceState.getDouble("ACTUALLON");
+            try{
+                actualLoc = savedInstanceState.getString("ACTUALLOC");
+                actualLat = savedInstanceState.getDouble("ACTUALLAT");
+                actualLon = savedInstanceState.getDouble("ACTUALLON");
+            }catch(Exception e){
+                //do nothing
+            }
         }
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -71,15 +79,40 @@ public class ListFragment extends Fragment {
             startLocationListener();
         }
 
+        //set onclick events
+        addButton = view.findViewById(R.id.addButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditText editText = new EditText(getContext());
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Aggiungi località")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String name = editText.getText().toString();
+                                if(!locHolder.exist(name))
+                                    mAdapter.addLocation(new Location(name));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setView(editText)
+                        .show();
+            }
+        });
+
         return view;
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putString("ACTUALLOC", actualLoc);
-        savedInstanceState.putDouble("ACTUALLAT", actualLat);
-        savedInstanceState.putDouble("ACTUALLON", actualLon);
+        if(actualLoc != null && actualLat != null && actualLon != null){
+            savedInstanceState.putString("ACTUALLOC", actualLoc);
+            savedInstanceState.putDouble("ACTUALLAT", actualLat);
+            savedInstanceState.putDouble("ACTUALLON", actualLon);
+        }
     }
 
     @Override
@@ -99,21 +132,9 @@ public class ListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add:
+            case R.id.menu_item_search:
 
-                final EditText editText = new EditText(getContext());
-
-                new AlertDialog.Builder(getContext())
-                        .setTitle("Aggiungi località")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mAdapter.addLocation(new Location(editText.getText().toString()));
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setView(editText)
-                        .show();
+                //TODO search ?
 
                 return true;
             default:
@@ -123,13 +144,14 @@ public class ListFragment extends Fragment {
 
     // Holder
 
-    private class LocationHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private class LocationHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         private TextView mNameTextView;
         private Location mLocation;
 
         public LocationHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item, parent, false));
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
             mNameTextView = itemView.findViewById(R.id.name);
         }
 
@@ -137,6 +159,26 @@ public class ListFragment extends Fragment {
         public void onClick(View view) {
             Intent intent = DetailActivity.newIntent(getActivity(), mLocation.getId());
             startActivity(intent);
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+
+            if(mAdapter.isRemovable(mLocation)){
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Rimuovere "+mLocation.getName()+" ?")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mAdapter.removeLocation(mLocation);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                return true;
+            }
+
+            return false;
         }
 
         public void bind(Location location) {
@@ -174,6 +216,18 @@ public class ListFragment extends Fragment {
         public void addLocation(Location l){
             mLocations.add(l);
             this.notifyDataSetChanged();
+            locHolder.save(l);
+        }
+
+        public void removeLocation(Location l){
+            for(Location loc : mLocations){
+                if(loc.getName().equals(l.getName())){
+                    locHolder.remove(l.getName());
+                    mLocations.remove(loc);
+                    break;
+                }
+            }
+            this.notifyDataSetChanged();
         }
 
         public void notifyLocationUpdated(android.location.Location location){
@@ -184,7 +238,7 @@ public class ListFragment extends Fragment {
                 List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
                 if(addresses!=null && addresses.size()>0){
-                    name = addresses.get(0).getLocality();
+                    name = addresses.get(0).getLocality() +", "+ addresses.get(0).getCountryCode();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -200,15 +254,19 @@ public class ListFragment extends Fragment {
             actualLat = location.getLatitude();
             this.notifyDataSetChanged();
         }
+
+        public boolean isRemovable(Location l){
+            return mLocations.get(0) != l || actualLoc == null;
+        }
     }
 
     //Location
 
-    private void startLocationListener() {
+    public void startLocationListener() {
         LocationParams.Builder builder = new LocationParams.Builder()
                 .setAccuracy(LocationAccuracy.HIGH)
                 .setDistance(0)
-                .setInterval(10000); // 10 sec
+                .setInterval(60000); // 1 min
         SmartLocation.with(getContext()).location().continuous().config(builder.build())
                 .start(new OnLocationUpdatedListener() {
                     @Override
@@ -220,10 +278,6 @@ public class ListFragment extends Fragment {
     //Permissions
 
     private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        } else {
-            startLocationListener();
-        }
+        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
     }
 }
