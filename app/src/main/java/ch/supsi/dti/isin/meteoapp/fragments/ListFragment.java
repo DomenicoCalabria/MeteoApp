@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -46,7 +48,7 @@ public class ListFragment extends Fragment {
     private String actualLoc = null;
     private Double actualLat = null;
     private Double actualLon = null;
-    private boolean notifyOn = false;
+    private WheaterNotificationsService wns;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,7 +61,6 @@ public class ListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_list, container, false);
         mLocationRecyclerView = view.findViewById(R.id.recycler_view);
         mLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
         locHolder = LocationsHolder.get(getActivity());
         List<Location> locations = locHolder.getLocations();
         mAdapter = new LocationAdapter(locations);
@@ -134,11 +135,11 @@ public class ListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item_search:
+            //case R.id.menu_item_search:
 
                 //TODO search ?
 
-                return true;
+              //  return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -246,26 +247,25 @@ public class ListFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            if(actualLat == null && actualLon == null)
-                mLocations.add(0, new Location(name));
-            else
+            Location locFound = new Location(name, location.getLatitude(), location.getLongitude());
+
+            if(actualLat == null && actualLon == null){
+                mLocations.add(0, locFound);
+
+                //creo il sistema di notifica e lo avvio
+                //wns = new WheaterNotificationsService(locFound);
+                //wns.setServiceAlarm(getContext(), true);
+            }
+            else{
                 mLocations.get(0).setName(name);
+                //if(!name.equals(actualLoc))
+                    //wns.updateLocation(locFound);
+            }
 
             actualLoc = name;
             actualLon = location.getLongitude();
             actualLat = location.getLatitude();
-
-            if(!notifyOn) {
-                WheaterNotificationsService wns = new WheaterNotificationsService();
-                wns.setServiceAlarm(getContext(), true); notifyOn = true;
-            }
-
             this.notifyDataSetChanged();
-        }
-
-        private String getForecastForLocation(String actualLoc) {
-
-            return null;
         }
 
         public boolean isRemovable(Location l){

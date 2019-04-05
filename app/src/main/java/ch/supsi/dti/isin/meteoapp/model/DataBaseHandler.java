@@ -65,7 +65,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public void saveCity(Location l){
         String query = "insert into "+DataBaseSchema.Locations.NAME+" values (" +
                 "null" + ","+
-                "'"+l.getName()+ "',"+
+                "'"+l.getName().replaceAll("'", " ")+ "',"+
                 l.getLatitude() + ","+
                 l.getLongitude()+
                 ");";

@@ -10,11 +10,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 import ch.supsi.dti.isin.meteoapp.model.Location;
 import ch.supsi.dti.isin.meteoapp.utility.NotificationRestClient;
-import ch.supsi.dti.isin.meteoapp.utility.RestClient;
 import ch.supsi.dti.isin.meteoapp.utility.Weather;
 
 import java.util.Objects;
@@ -26,12 +24,17 @@ public class WheaterNotificationsService extends IntentService {
     private Location mLocation;
     private Weather mForecast;
 
+    private static Intent newIntent(Context context) {
+        return new Intent(context, WheaterNotificationsService.class);
+    }
+
     public WheaterNotificationsService(){
         super("WheaterNotificationsService");
     }
 
-    public WheaterNotificationsService(String name) {
-        super(name);
+    public WheaterNotificationsService(Location mLocation) {
+        super("WheaterNotificationsService");
+        this.mLocation = mLocation;
     }
 
     // da chiamare (una volta) con TestService.setServiceAlarm(this, true)
@@ -50,10 +53,6 @@ public class WheaterNotificationsService extends IntentService {
 
         NotificationRestClient openWeatherClient = new NotificationRestClient(this);
         openWeatherClient.request(mLocation.getName());
-    }
-
-    private static Intent newIntent(Context context) {
-        return null;
     }
 
     private void sendNotification() {
@@ -82,15 +81,20 @@ public class WheaterNotificationsService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        sendNotification();
+        //lancia un nullPointerException, rivedere
+        //sendNotification();
     }
 
     public void updateService(Weather weather){
-        if(!weather.getDesc().equals(mForecast.getDesc())){
+        if(mForecast == null){
+            mForecast = weather;
+        }else if(!weather.getDesc().equals(mForecast.getDesc())){
             mForecast = weather;
             sendNotification();
         }
     }
 
-
+    public void updateLocation(Location locFound) {
+        this.mLocation = locFound;
+    }
 }
