@@ -31,6 +31,7 @@ import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
 import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.model.Location;
+import ch.supsi.dti.isin.meteoapp.services.WheaterNotificationsService;
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.config.LocationAccuracy;
@@ -45,6 +46,7 @@ public class ListFragment extends Fragment {
     private String actualLoc = null;
     private Double actualLat = null;
     private Double actualLon = null;
+    private boolean notifyOn = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -252,7 +254,18 @@ public class ListFragment extends Fragment {
             actualLoc = name;
             actualLon = location.getLongitude();
             actualLat = location.getLatitude();
+
+            if(!notifyOn) {
+                WheaterNotificationsService wns = new WheaterNotificationsService();
+                wns.setServiceAlarm(getContext(), true); notifyOn = true;
+            }
+
             this.notifyDataSetChanged();
+        }
+
+        private String getForecastForLocation(String actualLoc) {
+
+            return null;
         }
 
         public boolean isRemovable(Location l){

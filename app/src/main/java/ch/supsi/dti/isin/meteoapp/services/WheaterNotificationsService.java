@@ -1,4 +1,4 @@
-package ch.supsi.dti.isin.meteoapp.activities;
+package ch.supsi.dti.isin.meteoapp.services;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -9,16 +9,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.widget.Toast;
+
+import ch.supsi.dti.isin.meteoapp.model.Location;
+import ch.supsi.dti.isin.meteoapp.utility.NotificationRestClient;
+import ch.supsi.dti.isin.meteoapp.utility.RestClient;
+import ch.supsi.dti.isin.meteoapp.utility.Weather;
 
 import java.util.Objects;
 
+import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
+
 public class WheaterNotificationsService extends IntentService {
+
+    private Location mLocation;
+    private Weather mForecast;
 
     public WheaterNotificationsService(){
         super("WheaterNotificationsService");
-
     }
 
     public WheaterNotificationsService(String name) {
@@ -26,27 +35,28 @@ public class WheaterNotificationsService extends IntentService {
     }
 
     // da chiamare (una volta) con TestService.setServiceAlarm(this, true)
-    public static void setServiceAlarm(Context context, boolean isOn) {
+    public void setServiceAlarm(Context context, boolean isOn) {
         // creo l'intent e lo impacchetto in un PendingIntent
         Intent i = WheaterNotificationsService.newIntent(context);
-        i.putExtra("nome","");
-        i.putExtra("newMeteo","");
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
+
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (isOn)
-            Objects.requireNonNull(alarmManager).setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(),
-                    60000, pi); // 60'000 ms = 1 minuto
+            Objects.requireNonNull(alarmManager).setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 60000, pi); // 60'000 ms = 1 minuto
         else {
             Objects.requireNonNull(alarmManager).cancel(pi);
             pi.cancel();
         }
+
+        NotificationRestClient openWeatherClient = new NotificationRestClient(this);
+        openWeatherClient.request(mLocation.getName());
     }
 
     private static Intent newIntent(Context context) {
         return null;
     }
 
-    private void sendNotification(String nome, String newMeteo) {
+    private void sendNotification() {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // in Android >= 8.f0 devo registrare il canale delle notifiche a livello di sistema (prossima slide)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -57,10 +67,11 @@ public class WheaterNotificationsService extends IntentService {
             Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
         }
         // creo il contenuto della notifica
+
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "default")
                 .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                .setContentTitle("Meteo in "+nome)
-                .setContentText(newMeteo)
+                .setContentTitle("MeteoApp: Nuova previsione")
+                .setContentText(mForecast.getDesc())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         Intent intent = new Intent(this, DetailActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -71,6 +82,15 @@ public class WheaterNotificationsService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        sendNotification(intent.getStringExtra("nome"),intent.getStringExtra("newMeteo"));
+        sendNotification();
     }
+
+    public void updateService(Weather weather){
+        if(!weather.getDesc().equals(mForecast.getDesc())){
+            mForecast = weather;
+            sendNotification();
+        }
+    }
+
+
 }
