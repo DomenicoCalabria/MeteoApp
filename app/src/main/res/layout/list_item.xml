@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:layout_marginTop="2dp"
-    android:background="?attr/selectableItemBackground">
+    android:padding="8dp">
 
     <TextView
         android:id="@+id/name"
@@ -17,7 +15,8 @@
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:padding="6dp"
+        android:background="?attr/selectableItemBackground"/>
 
     <View
         android:layout_width="match_parent"

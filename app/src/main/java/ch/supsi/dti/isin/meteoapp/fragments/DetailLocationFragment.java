@@ -65,12 +65,12 @@ public class DetailLocationFragment extends Fragment {
         if(weather != null) {
             image.setImageResource(image.getContext().getResources().getIdentifier(weather.getIcon(), "drawable", image.getContext().getPackageName()));
             cityName.setText(mLocation.getName());
-            actualTemp.setText(String.valueOf(weather.getTemp()));
-            minTemp.setText(String.valueOf(weather.getMin()));
-            maxTemp.setText(String.valueOf(weather.getMax()));
+            actualTemp.setText(String.valueOf(weather.getTemp()) + " °C");
+            minTemp.setText(String.valueOf(weather.getMin()) + " °C");
+            maxTemp.setText(String.valueOf(weather.getMax()) + " °C");
             mainDescription.setText(weather.getDesc());
         }else{
-            Toast.makeText(getContext(), "Wrong place", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Località non trovata", Toast.LENGTH_LONG).show();
             // go back to home page
         }
     }
