@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -34,6 +32,8 @@ import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
 import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.model.Location;
 import ch.supsi.dti.isin.meteoapp.services.WheaterNotificationsService;
+import ch.supsi.dti.isin.meteoapp.utility.NotificationRestClient;
+import ch.supsi.dti.isin.meteoapp.utility.Weather;
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.config.LocationAccuracy;
@@ -49,11 +49,13 @@ public class ListFragment extends Fragment {
     private Double actualLat = null;
     private Double actualLon = null;
     private WheaterNotificationsService wns;
+    NotificationRestClient openWeatherClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -65,6 +67,8 @@ public class ListFragment extends Fragment {
         List<Location> locations = locHolder.getLocations();
         mAdapter = new LocationAdapter(locations);
         mLocationRecyclerView.setAdapter(mAdapter);
+        openWeatherClient = new NotificationRestClient(this);
+
 
         if (savedInstanceState != null) {
             try{
@@ -253,15 +257,16 @@ public class ListFragment extends Fragment {
                 mLocations.add(0, locFound);
 
                 //creo il sistema di notifica e lo avvio
-                //wns = new WheaterNotificationsService(locFound);
-                //wns.setServiceAlarm(getContext(), true);
+                wns = new WheaterNotificationsService();
+                wns.createNotificationChannel(getContext());
+                wns.setServiceAlarm(getContext(), true);
             }
             else{
                 mLocations.get(0).setName(name);
-                //if(!name.equals(actualLoc))
-                    //wns.updateLocation(locFound);
             }
 
+
+            openWeatherClient.request(mLocations.get(0).getName());
             actualLoc = name;
             actualLon = location.getLongitude();
             actualLat = location.getLatitude();
@@ -292,5 +297,9 @@ public class ListFragment extends Fragment {
 
     private void requestPermissions() {
         ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+    }
+
+    public void updateCurrentNotification(Weather w){
+        if(w != null) wns.updateService(w);
     }
 }

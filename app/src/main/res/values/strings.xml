@@ -19,4 +19,6 @@
     <string name="def_max">100</string>
     <string name="newItem">New</string>
     <string name="tienimi_aggiornato">Tienimi aggiornato</string>
+    <string name="notificationChannel">WheaterApp</string>
+    <string name="notificationChannelDesc">Notifiche di WheaterApp</string>
 </resources>

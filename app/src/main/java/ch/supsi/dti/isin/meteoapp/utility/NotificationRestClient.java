@@ -11,11 +11,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import ch.supsi.dti.isin.meteoapp.fragments.ListFragment;
 import ch.supsi.dti.isin.meteoapp.services.WheaterNotificationsService;
 
 public class NotificationRestClient extends AsyncTask<URL, Void, Weather> {
-    private WheaterNotificationsService context;
-    public NotificationRestClient(WheaterNotificationsService context) {
+    private ListFragment context;
+    public NotificationRestClient(ListFragment context) {
         this.context = context;
     }
 
@@ -71,6 +72,6 @@ public class NotificationRestClient extends AsyncTask<URL, Void, Weather> {
     @Override
     protected void onPostExecute(Weather weather) {
         super.onPostExecute(weather);
-        context.updateService(weather);
+        context.updateCurrentNotification(weather);
     }
 }

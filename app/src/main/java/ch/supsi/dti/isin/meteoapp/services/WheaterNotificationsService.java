@@ -2,6 +2,7 @@ package ch.supsi.dti.isin.meteoapp.services;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,9 +11,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 
-import ch.supsi.dti.isin.meteoapp.model.Location;
-import ch.supsi.dti.isin.meteoapp.utility.NotificationRestClient;
+import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.utility.Weather;
 
 import java.util.Objects;
@@ -21,8 +22,9 @@ import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
 
 public class WheaterNotificationsService extends IntentService {
 
-    private Location mLocation;
     private Weather mForecast;
+    private boolean notificActive = false;
+    NotificationManagerCompat notificationManager;
 
     private static Intent newIntent(Context context) {
         return new Intent(context, WheaterNotificationsService.class);
@@ -32,14 +34,33 @@ public class WheaterNotificationsService extends IntentService {
         super("WheaterNotificationsService");
     }
 
-    public WheaterNotificationsService(Location mLocation) {
-        super("WheaterNotificationsService");
-        this.mLocation = mLocation;
+    public void createNotificationChannel(Context c) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "WheaterApp";//getString(R.string.notificationChannel);
+            String description = "Notifiche di WheaterApp";//getString(R.string.notificationChannelDesc);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("default", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            notificationManager = NotificationManagerCompat.from(c);
+        }
     }
 
     // da chiamare (una volta) con TestService.setServiceAlarm(this, true)
     public void setServiceAlarm(Context context, boolean isOn) {
         // creo l'intent e lo impacchetto in un PendingIntent
+        if(!notificActive) {
+            //NotificationCompat.Builder msgNot = new NotificationCompat.Builder(this, "default")
+            //        .setSmallIcon(android.R.drawable.ic_menu_report_image)
+            //        .setContentTitle("MeteoApp: Nuova previsione")
+            //        .setContentText("inizializzazione...")
+            //        .setPriority(NotificationCompat.PRIORITY_DEFAULT);;
+            //notificationManager.notify(0,msgNot.build());
+            notificActive = true;
+        }
         Intent i = WheaterNotificationsService.newIntent(context);
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
 
@@ -51,8 +72,7 @@ public class WheaterNotificationsService extends IntentService {
             pi.cancel();
         }
 
-        NotificationRestClient openWeatherClient = new NotificationRestClient(this);
-        openWeatherClient.request(mLocation.getName());
+
     }
 
     private void sendNotification() {
@@ -76,7 +96,7 @@ public class WheaterNotificationsService extends IntentService {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = (PendingIntent) PendingIntent.getActivity(this, 0, intent, 0);
         mBuilder.setContentIntent(pendingIntent);
-        Objects.requireNonNull(mNotificationManager).notify(0, mBuilder.build());
+        notificationManager.notify(0, mBuilder.build());
     }
 
     @Override
@@ -88,13 +108,9 @@ public class WheaterNotificationsService extends IntentService {
     public void updateService(Weather weather){
         if(mForecast == null){
             mForecast = weather;
-        }else if(!weather.getDesc().equals(mForecast.getDesc())){
+        }else if(!mForecast.getDesc().equals(weather.getDesc())){
             mForecast = weather;
             sendNotification();
         }
-    }
-
-    public void updateLocation(Location locFound) {
-        this.mLocation = locFound;
     }
 }
