@@ -285,8 +285,7 @@ public class ListFragment extends Fragment {
         LocationParams.Builder builder = new LocationParams.Builder()
                 .setAccuracy(LocationAccuracy.HIGH)
                 .setDistance(0)
-                //.setInterval(60000); // 1 min
-                .setInterval(1000);
+                .setInterval(58000);
         SmartLocation.with(getContext()).location().continuous().config(builder.build())
                 .start(new OnLocationUpdatedListener() {
                     @Override
@@ -309,13 +308,7 @@ public class ListFragment extends Fragment {
     }
 
     public void updateCurrentNotification(Weather w){
-        if(w != null) {
-            w = new Weather(w.getCity(), w.getLat(), w.getLon(), String.valueOf(new Random().nextFloat() + " ;)"), w.getTemp(), w.getMin(), w.getMax(), w.getIcon());
-        }
-        else{
-            w=new Weather("test",0.0, 0.0,String.valueOf(new Random().nextFloat() + " ;)"), 30, 15, 45, null);
-
-        }
-        wns.setNewmForecast(w);
+        //w = new Weather("MOCK City", 0, 0, String.valueOf(new Random().nextFloat() + " ;)"), 30, 15, 45, "i01");
+        if(w != null) wns.setNewmForecast(w);
     }
 }
