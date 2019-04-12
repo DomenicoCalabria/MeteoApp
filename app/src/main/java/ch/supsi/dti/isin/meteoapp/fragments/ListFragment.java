@@ -2,18 +2,25 @@ package ch.supsi.dti.isin.meteoapp.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,6 +33,8 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Random;
 
 import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
@@ -48,8 +57,7 @@ public class ListFragment extends Fragment {
     private String actualLoc = null;
     private Double actualLat = null;
     private Double actualLon = null;
-    private WheaterNotificationsService wns;
-    NotificationRestClient openWeatherClient;
+    WheaterNotificationsService wns;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,8 +75,8 @@ public class ListFragment extends Fragment {
         List<Location> locations = locHolder.getLocations();
         mAdapter = new LocationAdapter(locations);
         mLocationRecyclerView.setAdapter(mAdapter);
-        openWeatherClient = new NotificationRestClient(this);
-
+        wns = new WheaterNotificationsService();
+        wns.setServiceAlarm(getContext(), true);
 
         if (savedInstanceState != null) {
             try{
@@ -255,18 +263,11 @@ public class ListFragment extends Fragment {
 
             if(actualLat == null && actualLon == null){
                 mLocations.add(0, locFound);
-
-                //creo il sistema di notifica e lo avvio
-                wns = new WheaterNotificationsService();
-                wns.createNotificationChannel(getContext());
-                wns.setServiceAlarm(getContext(), true);
-            }
-            else{
+            }else{
                 mLocations.get(0).setName(name);
+                sendCurrentLocRequest(mLocations.get(0).getName());
             }
 
-
-            openWeatherClient.request(mLocations.get(0).getName());
             actualLoc = name;
             actualLon = location.getLongitude();
             actualLat = location.getLatitude();
@@ -284,7 +285,8 @@ public class ListFragment extends Fragment {
         LocationParams.Builder builder = new LocationParams.Builder()
                 .setAccuracy(LocationAccuracy.HIGH)
                 .setDistance(0)
-                .setInterval(60000); // 1 min
+                //.setInterval(60000); // 1 min
+                .setInterval(1000);
         SmartLocation.with(getContext()).location().continuous().config(builder.build())
                 .start(new OnLocationUpdatedListener() {
                     @Override
@@ -299,7 +301,16 @@ public class ListFragment extends Fragment {
         ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
     }
 
+    //Current meteo request
+
+    public void sendCurrentLocRequest(String locName){
+        NotificationRestClient openWeatherClient = new NotificationRestClient(this);
+        openWeatherClient.request(locName);
+    }
+
     public void updateCurrentNotification(Weather w){
-        if(w != null) wns.updateService(w);
+        w = new Weather(w.getCity(), w.getLat(), w.getLon(), String.valueOf(new Random().nextFloat() + " ;)"), w.getTemp(), w.getMin(), w.getMax(), w.getIcon() );
+
+        wns.setNewmForecast(w);
     }
 }
