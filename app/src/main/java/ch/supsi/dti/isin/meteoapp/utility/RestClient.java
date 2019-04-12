@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import ch.supsi.dti.isin.meteoapp.fragments.DetailLocationFragment;
+import ch.supsi.dti.isin.meteoapp.model.Location;
 
 public class RestClient extends AsyncTask<URL, Void, Weather> {
     private DetailLocationFragment context;
@@ -22,6 +23,17 @@ public class RestClient extends AsyncTask<URL, Void, Weather> {
 
     public void request(String city){
         String apiURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city.replaceAll(" ", "%20") + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
+        URL url = null;
+        try {
+            url = new URL(apiURL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        this.execute(url);
+    }
+
+    public void requestLatLon(Location l){
+        String apiURL = "https://api.openweathermap.org/data/2.5/weather?lat=" + l.getLatitude() + "&lon=" + l.getLongitude() + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
         URL url = null;
         try {
             url = new URL(apiURL);
