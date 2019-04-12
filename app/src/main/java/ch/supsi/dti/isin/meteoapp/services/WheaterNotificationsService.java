@@ -56,22 +56,21 @@ public class WheaterNotificationsService extends IntentService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("WheaterNotificationsChannel", "Canale di notifiche sul meteo", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("Canale per tenere aggiornato l'utente sulle condizioni del meteo");
+
+            notificationManager.createNotificationChannel(channel);
             // registro il canale a livello di sistema
-            notificationManager = getSystemService(NotificationManager.class);
-            Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
+            //notificationManager = getSystemService(NotificationManager.class);
+            //Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
         }
 
         // creo il contenuto della notifica
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "default")
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "WheaterNotificationsChannel")
                 .setSmallIcon(android.R.drawable.ic_menu_report_image)
                 .setContentTitle("MeteoApp: Nuova previsione")
-                //.setContentText(mForecast.getDesc())
-                .setContentText("notifica")
+                .setContentText(mForecast.getDesc())
+                //.setContentText("notifica")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        Intent intent = new Intent(mContext, ListFragment.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = (PendingIntent) PendingIntent.getActivity(this, 0, intent, 0);
-        mBuilder.setContentIntent(pendingIntent);
+
         notificationManager.notify(6040, mBuilder.build());
     }
 
@@ -79,8 +78,8 @@ public class WheaterNotificationsService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.v("WheaterNotificationsS", "OnHandleIntent");
 
-        if(mContext != null)
-            sendNotification();
+        //if(mContext != null)
+        sendNotification();
 
         /*if(mForecast != null && newMForecast != null){
             if(!newMForecast.getDesc().equals(mForecast.getDesc())){

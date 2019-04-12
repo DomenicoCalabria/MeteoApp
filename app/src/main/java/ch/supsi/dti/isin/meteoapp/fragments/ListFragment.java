@@ -309,8 +309,13 @@ public class ListFragment extends Fragment {
     }
 
     public void updateCurrentNotification(Weather w){
-        w = new Weather(w.getCity(), w.getLat(), w.getLon(), String.valueOf(new Random().nextFloat() + " ;)"), w.getTemp(), w.getMin(), w.getMax(), w.getIcon() );
+        if(w != null) {
+            w = new Weather(w.getCity(), w.getLat(), w.getLon(), String.valueOf(new Random().nextFloat() + " ;)"), w.getTemp(), w.getMin(), w.getMax(), w.getIcon());
+        }
+        else{
+            w=new Weather("test",0.0, 0.0,String.valueOf(new Random().nextFloat() + " ;)"), 30, 15, 45, null);
 
+        }
         wns.setNewmForecast(w);
     }
 }
