@@ -12,16 +12,30 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import ch.supsi.dti.isin.meteoapp.fragments.ListFragment;
+import ch.supsi.dti.isin.meteoapp.model.Location;
 import ch.supsi.dti.isin.meteoapp.services.WheaterNotificationsService;
 
 public class NotificationRestClient extends AsyncTask<URL, Void, Weather> {
+
     private ListFragment context;
+
     public NotificationRestClient(ListFragment context) {
         this.context = context;
     }
 
     public void request(String city){
         String apiURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city.replaceAll(" ", "%20") + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
+        URL url = null;
+        try {
+            url = new URL(apiURL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        this.execute(url);
+    }
+
+    public void requestLatLon(Location l){
+        String apiURL = "https://api.openweathermap.org/data/2.5/weather?lat=" + l.getLatitude() + "&lon=" + l.getLongitude() + "&units=metric&appid=3e58627947f6c391d637848e9838d99c";
         URL url = null;
         try {
             url = new URL(apiURL);

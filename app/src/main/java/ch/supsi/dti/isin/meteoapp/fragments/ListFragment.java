@@ -2,25 +2,18 @@ package ch.supsi.dti.isin.meteoapp.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,13 +26,11 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.Random;
 
 import ch.supsi.dti.isin.meteoapp.R;
 import ch.supsi.dti.isin.meteoapp.activities.DetailActivity;
-import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.model.Location;
+import ch.supsi.dti.isin.meteoapp.model.LocationsHolder;
 import ch.supsi.dti.isin.meteoapp.services.WheaterNotificationsService;
 import ch.supsi.dti.isin.meteoapp.utility.NotificationRestClient;
 import ch.supsi.dti.isin.meteoapp.utility.Weather;
@@ -107,8 +98,23 @@ public class ListFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String name = editText.getText().toString();
-                                if(!locHolder.exist(name))
-                                    mAdapter.addLocation(new Location(name));
+                                if(!locHolder.exist(name)) {
+                                    Geocoder geocoder = new Geocoder(getContext());
+                                    List<Address> addresses;
+                                    Location location = new Location(name);
+
+                                    try {
+                                        addresses = geocoder.getFromLocationName(name, 1);
+                                        if (addresses.size() > 0) {
+                                            location.setLatitude(addresses.get(0).getLatitude());
+                                            location.setLongitude(addresses.get(0).getLongitude());
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    mAdapter.addLocation(location);
+                                }
                             }
                         })
                         .setNegativeButton(android.R.string.cancel, null)
@@ -265,7 +271,7 @@ public class ListFragment extends Fragment {
                 mLocations.add(0, locFound);
             }else{
                 mLocations.get(0).setName(name);
-                sendCurrentLocRequest(mLocations.get(0).getName());
+                sendCurrentLocRequest(mLocations.get(0));
             }
 
             actualLoc = name;
@@ -302,9 +308,14 @@ public class ListFragment extends Fragment {
 
     //Current meteo request
 
-    public void sendCurrentLocRequest(String locName){
+    public void sendCurrentLocRequest(Location loc){
         NotificationRestClient openWeatherClient = new NotificationRestClient(this);
-        openWeatherClient.request(locName);
+        if (loc.isLatLonSet()) {
+            openWeatherClient.requestLatLon(loc);
+        }
+        else {
+            openWeatherClient.request(loc.getName());
+        }
     }
 
     public void updateCurrentNotification(Weather w){

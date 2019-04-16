@@ -55,7 +55,13 @@ public class DetailLocationFragment extends Fragment {
         mainDescription = v.findViewById(R.id.tv_mainForecastDescription);
 
         RestClient openWeatherClient = new RestClient(this);
-        openWeatherClient.request(mLocation.getName());
+        if (mLocation.isLatLonSet()) {
+            openWeatherClient.requestLatLon(mLocation);
+        }
+        else {
+            openWeatherClient.request(mLocation.getName());
+        }
+
         return v;
     }
 
@@ -69,9 +75,9 @@ public class DetailLocationFragment extends Fragment {
             minTemp.setText(String.valueOf(weather.getMin()) + " °C");
             maxTemp.setText(String.valueOf(weather.getMax()) + " °C");
             mainDescription.setText(weather.getDesc());
-        }else{
+        }
+        else {
             Toast.makeText(getContext(), "Località non trovata", Toast.LENGTH_LONG).show();
-            // go back to home page
         }
     }
 }

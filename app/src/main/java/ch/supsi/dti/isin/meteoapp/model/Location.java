@@ -7,6 +7,7 @@ public class Location {
     private String mName;
     private double latitude;
     private double longitude;
+    private boolean latLonSet = false;
 
     public Location(String name) {
         Id = UUID.randomUUID();
@@ -18,6 +19,7 @@ public class Location {
         this.mName = name;
         this.latitude = lat;
         this.longitude = lon;
+        latLonSet = true;
     }
 
     public UUID getId() {
@@ -46,5 +48,19 @@ public class Location {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+        this.latLonSet = true;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+        this.latLonSet = true;
+    }
+
+    public boolean isLatLonSet() {
+        return latLonSet;
     }
 }
