@@ -1,0 +1,28 @@
+@startuml
+
+class WheaterNotificationsService extends IntentService  {
+private static Weather mForecast;
+private static Weather newMForecast;
+private static Intent newIntent(Context context)
+public WheaterNotificationsService()
+public void setServiceAlarm(Context context, boolean isOn)
+private void sendNotification()
+@Override protected void onHandleIntent(Intent intent)
+private void sendNotification(String initMSG)
+public void setNewmForecast(Weather newLocalWeather)
+}
+
+class NotificationRestClient extends AsyncTask {
+<URL, Void, Weather>
+private ListFragment context;
+public NotificationRestClient(ListFragment context)
+public void request(String city)
+@Override protected Weather doInBackground(URL... urls)
+@Override protected void onPostExecute(Weather weather)
+}
+
+class ListFragment
+ListFragment -- NotificationRestClient
+ListFragment -- WheaterNotificationsService
+
+@enduml

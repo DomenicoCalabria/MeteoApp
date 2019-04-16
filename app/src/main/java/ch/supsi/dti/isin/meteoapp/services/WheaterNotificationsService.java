@@ -1,3 +1,4 @@
+
 package ch.supsi.dti.isin.meteoapp.services;
 
 import android.app.AlarmManager;
@@ -15,6 +16,7 @@ import android.util.Log;
 
 import ch.supsi.dti.isin.meteoapp.utility.Weather;
 import java.util.Objects;
+
 
 public class WheaterNotificationsService extends IntentService {
     //nuovo meteo da notificare
