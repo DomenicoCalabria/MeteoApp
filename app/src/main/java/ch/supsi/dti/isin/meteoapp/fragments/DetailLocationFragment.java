@@ -1,6 +1,7 @@
 package ch.supsi.dti.isin.meteoapp.fragments;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ public class DetailLocationFragment extends Fragment {
     private TextView minTemp;
     private TextView maxTemp;
     private TextView mainDescription;
+    private Weather mWeather;
 
     public static DetailLocationFragment newInstance(UUID locationId) {
         Bundle args = new Bundle();
@@ -54,18 +56,48 @@ public class DetailLocationFragment extends Fragment {
         maxTemp = v.findViewById(R.id.tv_max);
         mainDescription = v.findViewById(R.id.tv_mainForecastDescription);
 
-        RestClient openWeatherClient = new RestClient(this);
-        if (mLocation.isLatLonSet()) {
-            openWeatherClient.requestLatLon(mLocation);
-        }
-        else {
-            openWeatherClient.request(mLocation.getName());
+        if (savedInstanceState != null) {
+            try{
+                mWeather = new Weather(
+                        savedInstanceState.getString("CITY"),
+                        mLocation.getLatitude(),
+                        mLocation.getLongitude(),
+                        savedInstanceState.getString("DESC"),
+                        savedInstanceState.getDouble("TEMP"),
+                        savedInstanceState.getDouble("MINTEMP"),
+                        savedInstanceState.getDouble("MAXTEMP"),
+                        savedInstanceState.getString("ICON")
+                );
+
+                updateView(mWeather);
+            }catch(Exception e){
+                //do nothing
+            }
+        }else{
+            RestClient openWeatherClient = new RestClient(this);
+            if (mLocation.isLatLonSet()) {
+                openWeatherClient.requestLatLon(mLocation);
+            }
+            else {
+                openWeatherClient.request(mLocation.getName());
+            }
         }
 
         return v;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        if(mWeather != null){
+            savedInstanceState.putString("CITY", mWeather.getCity());
+            savedInstanceState.putString("ICON", mWeather.getIcon());
+            savedInstanceState.putDouble("TEMP", mWeather.getTemp());
+            savedInstanceState.putDouble("MINTEMP", mWeather.getMin());
+            savedInstanceState.putDouble("MAXTEMP", mWeather.getMax());
+            savedInstanceState.putString("DESC", mWeather.getDesc());
+        }
+    }
 
     public void updateView(Weather weather){
         if(weather != null) {
@@ -75,6 +107,7 @@ public class DetailLocationFragment extends Fragment {
             minTemp.setText(String.valueOf(weather.getMin()) + " °C");
             maxTemp.setText(String.valueOf(weather.getMax()) + " °C");
             mainDescription.setText(weather.getDesc());
+            mWeather = weather;
         }
         else {
             Toast.makeText(getContext(), "Località non trovata", Toast.LENGTH_LONG).show();
