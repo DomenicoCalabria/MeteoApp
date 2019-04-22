@@ -1,0 +1,23 @@
+@startuml
+
+class Weather {
+private final String city;
+private final double lat;
+private final double lon;
+private final String desc;
+private final double temp;
+private final double min;
+private final double max;
+private final String icon;
+public Weather(String city, double lat, double lon, String desc, double temp, double min, double max, String icon)
+public String getCity()
+public double getLat()
+public double getLon()
+public String getDesc()
+public double getTemp()
+public double getMin()
+public double getMax()
+public String getIcon()
+}
+
+@enduml
